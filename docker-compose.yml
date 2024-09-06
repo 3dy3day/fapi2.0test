@@ -1,0 +1,29 @@
+version: '3'
+services:
+  bank:
+    build: ./bank
+    ports:
+      - "8000:8000"
+    depends_on:
+      - idp
+    environment:
+      - IDP_URL=http://idp:9000
+    volumes:
+      - ./certs:/app/certs
+
+  user:
+    build: ./user
+    depends_on:
+      - idp
+      - bank
+    volumes:
+      - ./certs:/app/certs
+
+  idp:
+    build:
+      context: ./  # Ensure it looks at the correct root directory
+      dockerfile: ./idp/Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/app
