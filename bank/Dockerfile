@@ -2,13 +2,17 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY ../certs/generate_certs.sh /app/generate_certs.sh
+# Install OpenSSL
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt requirements.txt
+# Copy application code
+COPY . .
+
+# Install dependencies
 RUN pip install -r requirements.txt
 
-RUN chmod +x /app/generate_certs.sh && /app/generate_certs.sh
-
-COPY . .
+# Run certs script
+RUN chmod +x /app/generate-cert.sh
+RUN sh /app/generate-cert.sh
 
 CMD ["python", "bank_api.py"]

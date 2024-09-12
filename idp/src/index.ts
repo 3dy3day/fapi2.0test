@@ -1,7 +1,10 @@
 import express, { Request, Response } from 'express';
 import { validateLogin, generateJWT, validateJWT, logout } from './auth';
 import { logTransaction, readTransactions } from './transactionLogger';
-import { handlePARRequest, validateDPoP } from './fapi_par';  // New imports for FAPI 2.0
+import { handlePARRequest, validateDPoP } from './fapiPar';  // New imports for FAPI 2.0
+import fs from 'fs';
+import path from 'path';
+
 
 const app = express();
 app.use(express.json());
@@ -59,6 +62,17 @@ app.post('/logout', (req: Request, res: Response) => {
 app.get('/transactions', (req: Request, res: Response) => {
   const log = readTransactions();
   return res.send(log);
+});
+
+// Public key endpoint
+app.get('/public_key', (req: Request, res: Response) => {
+  const publicKeyPath = path.join(__dirname, '../certs/idp.crt');
+  fs.readFile(publicKeyPath, 'utf8', (err, data) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to read public key' });
+    }
+    res.type('text/plain').send(data);
+  });
 });
 
 app.listen(9000, () => {
